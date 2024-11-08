@@ -207,14 +207,14 @@ total_spent = df[['HousingExpense', 'TransportationExpense', 'FoodExpense',
 total_income = df['Income'].sum()
 
 # Pie Chart of Spending vs Income
-labels = ['Total Spending', 'Remaining Income']
-sizes = [total_spent, total_income - total_spent]
-
-plt.figure(figsize=(8, 8))
-plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=['lightcoral', 'lightblue'])
-plt.title("Total Spending vs Remaining Income")
-plt.axis('equal')  # Equal aspect ratio ensures that pie chart is circular.
-plt.show()
+# labels = ['Total Spending', 'Remaining Income']
+# sizes = [total_spent, total_income - total_spent]
+#
+# plt.figure(figsize=(8, 8))
+# plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=['lightcoral', 'lightblue'])
+# plt.title("Total Spending vs Remaining Income")
+# plt.axis('equal')  # Equal aspect ratio ensures that pie chart is circular.
+# plt.show()
 
 # K Means Clustering
 
