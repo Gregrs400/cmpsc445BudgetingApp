@@ -19,8 +19,13 @@ class KMeansModel:
         return pd.read_csv("budgeting_dataset.csv")
 
     def calculate_total_expenses(self, data_frame):
+        # Returns sum of all expenses for each user
         return data_frame[['HousingExpense', 'TransportationExpense', 'FoodExpense',
                            'UtilitiesExpense', 'EntertainmentExpense']].sum(axis=1)
+
+    def calculate_expense_ratio(self, data_frame):
+        # Calculates the % of income spent by each user
+        return data_frame['TotalExpenses'] / data_frame['Income']
 
     def fit_data(self, data_frame):
         scaler = StandardScaler()
@@ -33,6 +38,10 @@ class KMeansModel:
         return kmeans.fit_predict(scaled_expenses)
 
     def get_cluster_analysis(self, data_frame):
+        # Create criteria for each category
+        # Example: <40% of income spent = frugal
+        #           >40% but <60% of income spent = average
+        #           >60% of income spent = spender
         data_frame['SpendingCategory'] = data_frame['SpendingCategory'].map(self.category_mapping)
 
         print(data_frame[['UserID', 'TotalExpenses', 'SpendingCategory']].head())
