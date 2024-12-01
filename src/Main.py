@@ -2,9 +2,8 @@ from src.GUI import GUI
 
 
 def main():
-    app = GUI()
+    app = GUI().root
     app.mainloop()
 
 
-if __name__ == "__main__":
-    main()
+main()
