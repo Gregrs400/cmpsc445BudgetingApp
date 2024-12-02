@@ -1,8 +1,9 @@
-from src.GUI import GUI
-
+from GUI import GUI
+import pandas as pd
 
 def main():
-    app = GUI().root
+    df = pd.read_csv("budgeting_dataset.csv") 
+    app = GUI(df).root
     app.mainloop()
 
 
