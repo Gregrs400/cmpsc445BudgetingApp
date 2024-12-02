@@ -43,10 +43,10 @@ def main():
     vis.display_histogram("Income", 10, "Income Distribution", "Income", "Frequency")
 
     # Scatter plot of Income vs Total Expenses
-    vis.display_scatter_plot("Income", "Total Expenses")
+    vis.display_scatter_plot("Income", "TotalExpenses")
 
     # Scatter plot of Total Expenses vs Savings
-    vis.display_scatter_plot("Total Expenses", "Savings")
+    vis.display_scatter_plot("TotalExpenses", "Savings")
 
     # Heatmap of Correlation Between Expenses and Budget
     vis.display_heatmap()
