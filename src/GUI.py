@@ -276,21 +276,3 @@ class GUI:
         # Predict spending category for the user input
         category_prediction = kmeans.predict(user_input_scaled)
         return category_mapping[category_prediction[0]]
-
-def main():
-    # Create a sample DataFrame for training
-    data = {
-        'HousingExpense': [1000, 1200, 800, 1500, 900, 1100, 950, 1300],
-        'TransportationExpense': [200, 250, 150, 300, 180, 220, 190, 270],
-        'FoodExpense': [400, 500, 350, 600, 450, 480, 420, 550],
-        'UtilitiesExpense': [150, 200, 120, 250, 180, 170, 140, 230],
-        'EntertainmentExpense': [100, 150, 80, 200, 120, 110, 90, 180]
-    }
-    df = pd.DataFrame(data)
-
-    # Initialize and run the GUI
-    app = GUI(df)
-    app.root.mainloop()
-
-if __name__ == "__main__":
-    main()
