@@ -1,7 +1,7 @@
 import pandas as pd
 
-from src.GUI import GUI
-from src.Visualization import Visualization
+from GUI import GUI
+from Visualization import Visualization
 
 
 def main():
@@ -63,7 +63,7 @@ def main():
     # Histogram of housing expenses
     vis.display_histogram("HousingExpense", 15, "Housing Expense", "Amount", "Frequency")
 
-    app = GUI().root
+    app = GUI(df).root
     app.mainloop()
 
 
