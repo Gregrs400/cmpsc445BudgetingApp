@@ -40,13 +40,28 @@ def main():
     vis.display_stacked_chart()
 
     # Histogram of income distribution
-    vis.display_histogram()
+    vis.display_histogram("Income", 10, "Income Distribution", "Income", "Frequency")
 
     # Scatter plot of Income vs Total Expenses
     vis.display_scatter_plot("Income", "Total Expenses")
 
     # Scatter plot of Total Expenses vs Savings
     vis.display_scatter_plot("Total Expenses", "Savings")
+
+    # Heatmap of Correlation Between Expenses and Budget
+    vis.display_heatmap()
+
+    # Bar Chart of Average Expenses by Category with Budget Comparison
+    vis.display_bar_chart()
+
+    # Line Plot of Total Monthly Expenses vs. Total Budget
+    vis.display_adv_line_plt()
+
+    # Scatter Plot of Actual vs. Budgeted
+    vis.display_adv_scatter_plt()
+
+    # Histogram of housing expenses
+    vis.display_histogram("HousingExpense", 15, "Housing Expense", "Amount", "Frequency")
 
     app = GUI().root
     app.mainloop()
