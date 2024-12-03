@@ -27,12 +27,10 @@ class KMeansModel:
         # Calculates the % of income spent by each user
         return data_frame['TotalExpenses'] / data_frame['Income']
 
-    def fit_data(self, data_frame):
+    def train(self, data_frame):
         scaler = StandardScaler()
         return scaler.fit_transform(data_frame[['TotalExpenses']])
 
-    def train(self):
-        return self.model
 
     def predict(self, kmeans, scaled_expenses):
         return kmeans.fit_predict(scaled_expenses)
