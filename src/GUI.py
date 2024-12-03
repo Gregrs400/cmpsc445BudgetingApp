@@ -12,6 +12,11 @@ from tkinter import ttk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
+pd.set_option('display.width', 9999)
+
+
 class GUI:
     def __init__(self, df):
         # Store the training dataframe
@@ -266,6 +271,7 @@ class GUI:
 
         kmeans = KMeans(n_clusters=3, random_state=42)
         self.df['SpendingCategory'] = kmeans.fit_predict(scaled_expenses)
+        print(self.df)
 
         category_mapping = {0: 'Frugal', 1: 'Average', 2: 'Spender'}
         self.df['SpendingCategory'] = self.df['SpendingCategory'].map(category_mapping)
