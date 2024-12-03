@@ -262,22 +262,27 @@ class GUI:
         return expenses
 
     def classify_spending_category(self, total_expenses):
+
         # Ensure the dataframe has TotalExpenses column
         self.df['TotalExpenses'] = self.df[['HousingExpense', 'TransportationExpense', 'FoodExpense',
                                             'UtilitiesExpense', 'EntertainmentExpense']].sum(axis=1)
 
+        self.df['ExpenseIncomeRatio'] = self.df['TotalExpenses'] / self.df['Income']
+
         scaler = StandardScaler()
-        scaled_expenses = scaler.fit_transform(self.df[['TotalExpenses']])
+        scaled_expenses_and_income = scaler.fit_transform(self.df[['TotalExpenses', 'Income']])
+        scaled_expense_income_ratio = scaler.fit_transform(self.df[['ExpenseIncomeRatio']])
 
         kmeans = KMeans(n_clusters=3, random_state=42)
-        self.df['SpendingCategory'] = kmeans.fit_predict(scaled_expenses)
-        print(self.df)
 
-        category_mapping = {0: 'Frugal', 1: 'Average', 2: 'Spender'}
+        self.df['SpendingCategory'] = kmeans.fit_predict(scaled_expense_income_ratio)
+        print(self.df[['TotalExpenses', 'Income', 'ExpenseIncomeRatio', 'SpendingCategory']])
+
+        category_mapping = {0: 'Average', 1: 'Frugal', 2: 'Spender'}
         self.df['SpendingCategory'] = self.df['SpendingCategory'].map(category_mapping)
 
         # Scale the user input for prediction
-        user_input_scaled = scaler.transform([[total_expenses]])
+        user_input_scaled = scaler.transform([[scaled_expenses_and_income]])
 
         # Predict spending category for the user input
         category_prediction = kmeans.predict(user_input_scaled)

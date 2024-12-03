@@ -21,47 +21,47 @@ def main():
 
     # Display data visualizations
     vis = Visualization(df)
-    # Pair plot
-    vis.display_pair_plot()
-
-    # Average expenses bar chart
-    vis.display_avg_exp_chart()
-
-    # Pie chart
-    vis.display_pie_chart()
-
-    # Line plot of Total Monthly Expenses
-    vis.display_line_plot()
-
-    # Box plot
-    vis.display_box_plot()
-
-    # Stacked bar chart
-    vis.display_stacked_chart()
-
-    # Histogram of income distribution
-    vis.display_histogram("Income", 10, "Income Distribution", "Income", "Frequency")
-
-    # Scatter plot of Income vs Total Expenses
-    vis.display_scatter_plot("Income", "TotalExpenses")
-
-    # Scatter plot of Total Expenses vs Savings
-    vis.display_scatter_plot("TotalExpenses", "Savings")
-
-    # Heatmap of Correlation Between Expenses and Budget
-    vis.display_heatmap()
-
-    # Bar Chart of Average Expenses by Category with Budget Comparison
-    vis.display_bar_chart()
-
-    # Line Plot of Total Monthly Expenses vs. Total Budget
-    vis.display_adv_line_plt()
-
-    # Scatter Plot of Actual vs. Budgeted
-    vis.display_adv_scatter_plt()
-
-    # Histogram of housing expenses
-    vis.display_histogram("HousingExpense", 15, "Housing Expense", "Amount", "Frequency")
+    # # Pair plot
+    # vis.display_pair_plot()
+    #
+    # # Average expenses bar chart
+    # vis.display_avg_exp_chart()
+    #
+    # # Pie chart
+    # vis.display_pie_chart()
+    #
+    # # Line plot of Total Monthly Expenses
+    # vis.display_line_plot()
+    #
+    # # Box plot
+    # vis.display_box_plot()
+    #
+    # # Stacked bar chart
+    # vis.display_stacked_chart()
+    #
+    # # Histogram of income distribution
+    # vis.display_histogram("Income", 10, "Income Distribution", "Income", "Frequency")
+    #
+    # # Scatter plot of Income vs Total Expenses
+    # vis.display_scatter_plot("Income", "TotalExpenses")
+    #
+    # # Scatter plot of Total Expenses vs Savings
+    # vis.display_scatter_plot("TotalExpenses", "Savings")
+    #
+    # # Heatmap of Correlation Between Expenses and Budget
+    # vis.display_heatmap()
+    #
+    # # Bar Chart of Average Expenses by Category with Budget Comparison
+    # vis.display_bar_chart()
+    #
+    # # Line Plot of Total Monthly Expenses vs. Total Budget
+    # vis.display_adv_line_plt()
+    #
+    # # Scatter Plot of Actual vs. Budgeted
+    # vis.display_adv_scatter_plt()
+    #
+    # # Histogram of housing expenses
+    # vis.display_histogram("HousingExpense", 15, "Housing Expense", "Amount", "Frequency")
 
     app = GUI(df).root
     app.mainloop()
