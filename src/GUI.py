@@ -274,6 +274,11 @@ class GUI:
                                             'UtilitiesExpense', 'EntertainmentExpense']].sum(axis=1)
 
         self.df['ExpenseIncomeRatio'] = self.df['TotalExpenses'] / self.df['Income']
+        # Ensure the dataframe has TotalExpenses column
+        self.df['TotalExpenses'] = self.df[['HousingExpense', 'TransportationExpense', 'FoodExpense',
+                                            'UtilitiesExpense', 'EntertainmentExpense']].sum(axis=1)
+
+        self.df['ExpenseIncomeRatio'] = self.df['TotalExpenses'] / self.df['Income']
 
         scaler = StandardScaler()
         scaled_expense_income_ratio = scaler.fit_transform(self.df[['ExpenseIncomeRatio']])
@@ -287,8 +292,7 @@ class GUI:
         self.df['SpendingCategory'] = self.df['SpendingCategory'].map(category_mapping)
 
         user_expense_income_ratio = float(user_total_expenses / user_income)
-        user_expense_income_ratio_arr = np.array([[user_expense_income_ratio]])
-        user_expense_income_ratio_arr_scaled = scaler.fit_transform(user_expense_income_ratio_arr)
+        user_df = pd.DataFrame([[user_expense_income_ratio]], columns=['UserExpenseIncomeRatio'])
         print(f'user_expense_income_ratio: {user_expense_income_ratio}')
 
         # Scale the user input for prediction
@@ -298,6 +302,6 @@ class GUI:
         # Predict spending category for the user input
         print(kmeans.labels_)
         print(kmeans.cluster_centers_)
-        category_prediction = kmeans.predict(user_expense_income_ratio_arr_scaled)
+        category_prediction = kmeans.predict(user_df[['UserExpenseIncomeRatio']])
         print(f'category_prediction: {category_prediction}')
         return category_mapping[category_prediction[0]]
