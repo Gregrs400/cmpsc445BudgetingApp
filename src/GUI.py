@@ -153,9 +153,15 @@ class GUI:
         savings = income - total_expenses
 
         # Create a pie chart
-        labels = ['Savings', 'Housing', 'Food', 'Transportation', 'Utilities', 'Entertainment']
-        sizes = [savings, housing, food, transportation, utilities, entertainment]
-        colors = ['#2ecc71', '#e74c3c', '#3498db', '#f39c12', '#9b59b6', '#1abc9c']
+
+        if savings <= 0:
+            labels = ['Housing', 'Food', 'Transportation', 'Utilities', 'Entertainment']
+            sizes = [housing, food, transportation, utilities, entertainment]
+            colors = ['#e74c3c', '#3498db', '#f39c12', '#9b59b6', '#1abc9c']
+        else:
+            labels = ['Savings', 'Housing', 'Food', 'Transportation', 'Utilities', 'Entertainment']
+            sizes = [savings, housing, food, transportation, utilities, entertainment]
+            colors = ['#2ecc71', '#e74c3c', '#3498db', '#f39c12', '#9b59b6', '#1abc9c']
 
         fig = Figure(figsize=(6, 4), dpi=100)
         ax = fig.add_subplot(111)
@@ -224,7 +230,7 @@ class GUI:
             self.predictions_label.config(text=predictions_text)
 
             # Classify spending category
-            spending_category = self.classify_spending_category(total_expenses)
+            spending_category = self.classify_spending_category(income, total_expenses)
             self.spending_category_label.config(text=f"Spending Category: {spending_category}")
 
         except ValueError:
@@ -261,7 +267,7 @@ class GUI:
 
         return expenses
 
-    def classify_spending_category(self, total_expenses):
+    def classify_spending_category(self, user_income, user_total_expenses):
 
         # Ensure the dataframe has TotalExpenses column
         self.df['TotalExpenses'] = self.df[['HousingExpense', 'TransportationExpense', 'FoodExpense',
@@ -270,10 +276,9 @@ class GUI:
         self.df['ExpenseIncomeRatio'] = self.df['TotalExpenses'] / self.df['Income']
 
         scaler = StandardScaler()
-        scaled_expenses_and_income = scaler.fit_transform(self.df[['TotalExpenses', 'Income']])
         scaled_expense_income_ratio = scaler.fit_transform(self.df[['ExpenseIncomeRatio']])
 
-        kmeans = KMeans(n_clusters=3, random_state=42)
+        kmeans = KMeans(n_clusters=3, random_state=42, max_iter=500, n_init="auto")
 
         self.df['SpendingCategory'] = kmeans.fit_predict(scaled_expense_income_ratio)
         print(self.df[['TotalExpenses', 'Income', 'ExpenseIncomeRatio', 'SpendingCategory']])
@@ -281,9 +286,18 @@ class GUI:
         category_mapping = {0: 'Average', 1: 'Frugal', 2: 'Spender'}
         self.df['SpendingCategory'] = self.df['SpendingCategory'].map(category_mapping)
 
+        user_expense_income_ratio = float(user_total_expenses / user_income)
+        user_expense_income_ratio_arr = np.array([[user_expense_income_ratio]])
+        user_expense_income_ratio_arr_scaled = scaler.fit_transform(user_expense_income_ratio_arr)
+        print(f'user_expense_income_ratio: {user_expense_income_ratio}')
+
         # Scale the user input for prediction
-        user_input_scaled = scaler.transform([[scaled_expenses_and_income]])
+        # scaled_user_expense_income_ratio = scaler.fit_transform(user_expense_income_ratio)
+        # print(f'scaled_user_expense_income_ratio: {scaled_user_expense_income_ratio}')
 
         # Predict spending category for the user input
-        category_prediction = kmeans.predict(user_input_scaled)
+        print(kmeans.labels_)
+        print(kmeans.cluster_centers_)
+        category_prediction = kmeans.predict(user_expense_income_ratio_arr_scaled)
+        print(f'category_prediction: {category_prediction}')
         return category_mapping[category_prediction[0]]
