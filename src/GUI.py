@@ -1,6 +1,5 @@
 import pandas as pd
 import seaborn as sns
-import matplotlib
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
@@ -30,13 +29,13 @@ class GUI:
 
         # Create a main container frame
         self.main_frame = tk.Frame(self.root, bg='#ffffff', padx=20, pady=20)
-        self.main_frame.pack(padx=20, pady=20, fill='both', expand=True, side=tk.TOP)
+        self.main_frame.pack(padx=20, pady=20, fill='both', expand=True)
 
         # Create sections
         self.create_header()
         self.create_input_section()
+        self.create_buttons()  # Create buttons before result section
         self.create_result_section()
-        self.create_visualize_button()
 
     def create_header(self):
         # Header with improved styling
@@ -95,10 +94,43 @@ class GUI:
             # Store entry reference
             self.entries[category.replace(" ", "")] = entry
 
+    def create_buttons(self):
+        # Button frame
+        self.button_frame = tk.Frame(self.main_frame, bg='#ffffff')
+        self.button_frame.pack(fill='x', pady=20)  # Pack with fill='x'
+
+        # Analyze button
+        analyze_button = tk.Button(
+            self.button_frame, 
+            text="Analyze Budget", 
+            command=self.visualize_budget, 
+            font=('Helvetica', 12, 'bold'),
+            bg='#3498db', 
+            fg='white', 
+            relief='flat',
+            padx=20, 
+            pady=10
+        )
+        analyze_button.pack(side=tk.LEFT, padx=10)
+
+        # Reset button
+        reset_button = tk.Button(
+            self.button_frame,
+            text="Reset", 
+            command=self.reset_gui,
+            font=('Helvetica', 12, 'bold'),
+            bg='#e74c3c',
+            fg='white',
+            relief='flat',
+            padx=20,
+            pady=10
+        )
+        reset_button.pack(side=tk.LEFT, padx=10)
+
     def create_result_section(self):
         # Result frame for displaying analysis
         self.result_frame = tk.Frame(self.main_frame, bg='#ffffff')
-        self.result_frame.pack(fill='both', expand=True, pady=(20, 0))
+        self.result_frame.pack(fill='both', expand=True)
 
         # Labels for different results
         self.savings_label = tk.Label(self.result_frame, 
@@ -124,24 +156,13 @@ class GUI:
                                           justify=tk.LEFT)
         self.predictions_label.pack(anchor='w', pady=5)
 
-        # Placeholder for pie chart
-        self.chart_frame = tk.Frame(self.result_frame, bg='#ffffff')
-        self.chart_frame.pack(fill='both', expand=True)
+        # Create separate container for chart
+        self.chart_container = tk.Frame(self.result_frame, bg='#ffffff')
+        self.chart_container.pack(fill='both', expand=True)
 
-    def create_visualize_button(self):
-        # Styled button
-        visualize_button = tk.Button(
-            self.main_frame, 
-            text="Analyze Budget", 
-            command=self.visualize_budget, 
-            font=('Helvetica', 12, 'bold'),
-            bg='#3498db', 
-            fg='white', 
-            relief='flat',
-            padx=20, 
-            pady=10
-        )
-        visualize_button.pack(pady=20)
+        # Placeholder for pie chart
+        self.chart_frame = tk.Frame(self.chart_container, bg='#ffffff')
+        self.chart_frame.pack(fill='both', expand=True)
 
     def plot_budget_pie_chart(self, income, housing, food, transportation, utilities, entertainment):
         # Clear previous chart if exists
@@ -153,7 +174,6 @@ class GUI:
         savings = income - total_expenses
 
         # Create a pie chart
-
         if savings <= 0:
             labels = ['Housing', 'Food', 'Transportation', 'Utilities', 'Entertainment']
             sizes = [housing, food, transportation, utilities, entertainment]
@@ -239,7 +259,19 @@ class GUI:
             self.predictions_label.config(text="Please enter valid numbers")
             self.spending_category_label.config(text="Unable to analyze")
 
-    # Keep the predict_expenses and classify_spending_category methods from the previous implementation
+    def reset_gui(self):
+        # Clear all entry fields
+        for entry in self.entries.values():
+            entry.delete(0, tk.END)
+
+        # Reset labels to default values
+        self.savings_label.config(text="Total Savings: $0")
+        self.spending_category_label.config(text="Spending Category: N/A")
+        self.predictions_label.config(text="Predicted Expenses:\n")
+
+        # Clear the chart
+        for widget in self.chart_frame.winfo_children():
+            widget.destroy()
 
     def predict_expenses(self, user_input):
         expenses = {}
@@ -268,12 +300,6 @@ class GUI:
         return expenses
 
     def classify_spending_category(self, user_income, user_total_expenses):
-
-        # Ensure the dataframe has TotalExpenses column
-        self.df['TotalExpenses'] = self.df[['HousingExpense', 'TransportationExpense', 'FoodExpense',
-                                            'UtilitiesExpense', 'EntertainmentExpense']].sum(axis=1)
-
-        self.df['ExpenseIncomeRatio'] = self.df['TotalExpenses'] / self.df['Income']
         # Ensure the dataframe has TotalExpenses column
         self.df['TotalExpenses'] = self.df[['HousingExpense', 'TransportationExpense', 'FoodExpense',
                                             'UtilitiesExpense', 'EntertainmentExpense']].sum(axis=1)
@@ -286,22 +312,12 @@ class GUI:
         kmeans = KMeans(n_clusters=3, random_state=42, max_iter=500, n_init="auto")
 
         self.df['SpendingCategory'] = kmeans.fit_predict(scaled_expense_income_ratio)
-        print(self.df[['TotalExpenses', 'Income', 'ExpenseIncomeRatio', 'SpendingCategory']])
 
         category_mapping = {0: 'Average', 1: 'Frugal', 2: 'Spender'}
         self.df['SpendingCategory'] = self.df['SpendingCategory'].map(category_mapping)
 
         user_expense_income_ratio = float(user_total_expenses / user_income)
         user_df = pd.DataFrame([[user_expense_income_ratio]], columns=['UserExpenseIncomeRatio'])
-        print(f'user_expense_income_ratio: {user_expense_income_ratio}')
 
-        # Scale the user input for prediction
-        # scaled_user_expense_income_ratio = scaler.fit_transform(user_expense_income_ratio)
-        # print(f'scaled_user_expense_income_ratio: {scaled_user_expense_income_ratio}')
-
-        # Predict spending category for the user input
-        print(kmeans.labels_)
-        print(kmeans.cluster_centers_)
         category_prediction = kmeans.predict(user_df[['UserExpenseIncomeRatio']])
-        print(f'category_prediction: {category_prediction}')
         return category_mapping[category_prediction[0]]
