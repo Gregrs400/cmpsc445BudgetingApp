@@ -5,9 +5,8 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsRegressor
-import numpy as np
 import tkinter as tk
-from tkinter import ttk
+import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -215,9 +214,81 @@ class GUI:
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
+    def reset_gui(self):
+        # Clear all entry fields
+        for entry in self.entries.values():
+            entry.delete(0, tk.END)
+
+        # Reset labels to default values
+        self.savings_label.config(text="Total Savings: $0")
+        self.spending_category_label.config(text="Spending Category: N/A")
+        self.predictions_label.config(text="Predicted Expenses:\n")
+
+        # Clear the chart
+        for widget in self.chart_frame.winfo_children():
+            widget.destroy()
+
+
+    def predict_expenses(self, user_input):
+        # Define input and output features
+        input_features = ['Income', 'TransportationExpense', 'FoodExpense', 
+                        'UtilitiesExpense', 'EntertainmentExpense']
+        expense_categories = ['HousingExpense', 'TransportationExpense', 
+                            'FoodExpense', 'UtilitiesExpense', 'EntertainmentExpense']
+        
+        # Initialize dictionary for predictions
+        predictions = {}
+        
+        # Scale all features once
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(self.df[input_features])
+        
+        # Get user's data and scale it using the same scaler
+        user_income = float(self.entries['MonthlyIncome'].get())
+        user_data = pd.DataFrame([[
+            user_income,
+            float(self.entries['TransportationExpense'].get()),
+            float(self.entries['FoodExpense'].get()),
+            float(self.entries['UtilitiesExpense'].get()),
+            float(self.entries['EntertainmentExpense'].get())
+        ]], columns=input_features)
+        user_scaled = scaler.transform(user_data)
+        
+        # Predict each expense category
+        for category in expense_categories:
+            # For each category, we'll use income and the other expenses as features
+            # (excluding the current category if it's one we already have)
+            feature_mask = [col != category for col in input_features]
+            prediction_features = X_scaled[:, feature_mask]
+            user_prediction_features = user_scaled[:, feature_mask]
+            
+            # Get the target values for this category
+            y = self.df[category]
+            
+            # Create and train the model
+            knn_model = KNeighborsRegressor(n_neighbors=5, weights='distance')
+            knn_model.fit(prediction_features, y)
+            
+            # Make prediction
+            prediction = knn_model.predict(user_prediction_features)[0]
+            
+            # Store the prediction, ensuring it's not negative
+            predictions[category] = max(0, prediction)
+        
+        # Adjust predictions to maintain reasonable proportions
+        total_predicted = sum(predictions.values())
+        total_actual = float(user_income) * 0.9  # Assuming people typically spend 90% of income
+        
+        if total_predicted > total_actual:
+            # Scale down predictions to match typical spending
+            scale_factor = total_actual / total_predicted
+            predictions = {k: v * scale_factor for k, v in predictions.items()}
+        
+        return predictions
+
     def visualize_budget(self):
         try:
-            # Retrieve inputs dynamically
+            # Retrieve inputs
             income = float(self.entries['MonthlyIncome'].get())
             housing = float(self.entries['HousingExpense'].get())
             food = float(self.entries['FoodExpense'].get())
@@ -234,17 +305,12 @@ class GUI:
             # Create pie chart
             self.plot_budget_pie_chart(income, housing, food, transportation, utilities, entertainment)
 
-            # Prepare user input for predictions
-            user_input = pd.DataFrame([[transportation, food, utilities, entertainment]],
-                                      columns=['TransportationExpense', 'FoodExpense', 'UtilitiesExpense',
-                                               'EntertainmentExpense'])
+            # Get predictions
+            predicted_expenses = self.predict_expenses(None)  # 'None' since we now get values from entries directly
 
-            # Predict expenses
-            predicted_expenses = self.predict_expenses(user_input)
-
-            # Update predictions label
+            # Update predictions label with formatted currency values
             predictions_text = "Predicted Expenses:\n" + "\n".join([
-                f"{cat.replace('Expense', '').strip()}: ${amount:.2f}"
+                f"{cat.replace('Expense', '').strip()}: ${amount:,.2f}"
                 for cat, amount in predicted_expenses.items()
             ])
             self.predictions_label.config(text=predictions_text)
@@ -259,65 +325,35 @@ class GUI:
             self.predictions_label.config(text="Please enter valid numbers")
             self.spending_category_label.config(text="Unable to analyze")
 
-    def reset_gui(self):
-        # Clear all entry fields
-        for entry in self.entries.values():
-            entry.delete(0, tk.END)
-
-        # Reset labels to default values
-        self.savings_label.config(text="Total Savings: $0")
-        self.spending_category_label.config(text="Spending Category: N/A")
-        self.predictions_label.config(text="Predicted Expenses:\n")
-
-        # Clear the chart
-        for widget in self.chart_frame.winfo_children():
-            widget.destroy()
-
-    def predict_expenses(self, user_input):
-        expenses = {}
-
-        # Prepare the features for prediction
-        X = self.df[['TransportationExpense', 'FoodExpense', 'UtilitiesExpense', 'EntertainmentExpense']]
-        
-        # Predict each expense category
-        expense_categories = ['HousingExpense', 'TransportationExpense', 'FoodExpense', 'UtilitiesExpense', 'EntertainmentExpense']
-        
-        for expense_category in expense_categories:
-            y_target = self.df[expense_category]
-
-            X_train, X_test, y_train, y_test = train_test_split(X, y_target, test_size=0.2, random_state=42)
-            
-            scaler = StandardScaler()
-            X_train_scaled = scaler.fit_transform(X_train)
-            user_input_scaled = scaler.transform(user_input)
-
-            knn_model = KNeighborsRegressor(n_neighbors=3)
-            knn_model.fit(X_train_scaled, y_train)
-
-            predicted_expense = knn_model.predict(user_input_scaled)
-            expenses[expense_category] = predicted_expense[0]
-
-        return expenses
-
     def classify_spending_category(self, user_income, user_total_expenses):
-        # Ensure the dataframe has TotalExpenses column
+        # Calculate expense ratios for training data
         self.df['TotalExpenses'] = self.df[['HousingExpense', 'TransportationExpense', 'FoodExpense',
                                             'UtilitiesExpense', 'EntertainmentExpense']].sum(axis=1)
-
         self.df['ExpenseIncomeRatio'] = self.df['TotalExpenses'] / self.df['Income']
 
+        # Scale the training data
         scaler = StandardScaler()
-        scaled_expense_income_ratio = scaler.fit_transform(self.df[['ExpenseIncomeRatio']])
+        scaled_ratios = scaler.fit_transform(self.df[['ExpenseIncomeRatio']])
 
+        # Train KMeans model
         kmeans = KMeans(n_clusters=3, random_state=42, max_iter=500, n_init="auto")
+        kmeans.fit(scaled_ratios)
 
-        self.df['SpendingCategory'] = kmeans.fit_predict(scaled_expense_income_ratio)
+        # Get cluster centers and sort them to determine categories
+        centers = kmeans.cluster_centers_.flatten()
+        sorted_center_indices = np.argsort(centers)
+        
+        # Map cluster indices to spending categories based on sorted centers
+        category_mapping = {
+            sorted_center_indices[0]: 'Frugal',    # Lowest center
+            sorted_center_indices[1]: 'Average',    # Middle center
+            sorted_center_indices[2]: 'Spender'     # Highest center
+        }
 
-        category_mapping = {0: 'Average', 1: 'Frugal', 2: 'Spender'}
-        self.df['SpendingCategory'] = self.df['SpendingCategory'].map(category_mapping)
+        # Calculate and scale user's expense ratio
+        user_expense_ratio = user_total_expenses / user_income
+        user_scaled_ratio = scaler.transform([[user_expense_ratio]])
 
-        user_expense_income_ratio = float(user_total_expenses / user_income)
-        user_df = pd.DataFrame([[user_expense_income_ratio]], columns=['UserExpenseIncomeRatio'])
-
-        category_prediction = kmeans.predict(user_df[['UserExpenseIncomeRatio']])
-        return category_mapping[category_prediction[0]]
+        # Predict category for user
+        user_cluster = kmeans.predict(user_scaled_ratio)[0]
+        return category_mapping[user_cluster]
