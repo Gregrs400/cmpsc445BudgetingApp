@@ -173,14 +173,15 @@ class GUI:
         savings = income - total_expenses
 
         # Create a pie chart
-        if savings <= 0:
-            labels = ['Housing', 'Food', 'Transportation', 'Utilities', 'Entertainment']
-            sizes = [housing, food, transportation, utilities, entertainment]
-            colors = ['#e74c3c', '#3498db', '#f39c12', '#9b59b6', '#1abc9c']
-        else:
-            labels = ['Savings', 'Housing', 'Food', 'Transportation', 'Utilities', 'Entertainment']
-            sizes = [savings, housing, food, transportation, utilities, entertainment]
-            colors = ['#2ecc71', '#e74c3c', '#3498db', '#f39c12', '#9b59b6', '#1abc9c']
+        pie_chart_items = [['Savings', savings, '#2ecc71', ], ['Housing', housing, '#e74c3c'], ['Food', food, '#3498db'], ['Transportation', transportation, '#f39c12'], ['Utilities', utilities, '#9b59b6'], ['Entertainment', entertainment, '#1abc9c']]
+        labels = []
+        sizes = []
+        colors = []
+        for item in pie_chart_items:
+            if item[1] > 0:
+                labels.append(item[0])
+                sizes.append(item[1])
+                colors.append(item[2])
 
         fig = Figure(figsize=(6, 4), dpi=100)
         ax = fig.add_subplot(111)
