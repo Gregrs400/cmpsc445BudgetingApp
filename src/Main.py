@@ -6,7 +6,7 @@ from Visualization import Visualization
 
 def main():
 
-    df = pd.read_csv("budgeting_dataset.csv")  # Create a dataframe of the budgeting_dataset.csv file
+    df = pd.read_csv("balanced_dataset.csv")  # Create a dataframe of the budgeting_dataset.csv file
     print(df.head())  # Print first 5 rows
     print(df.info())  # Print additional info on data
 
